@@ -1,0 +1,140 @@
+# TANAW
+
+> **TikTok for FSL. A creative edutainment platform for Deaf Filipino youth.**
+
+---
+
+## Problem Statement
+
+Deaf Filipino youth lack accessible, engaging FSL educational tools and are excluded from audio-first creative platforms like TikTok and Reels. This creates severe learning gaps for Deaf students while leaving Filipino Sign Language completely starved of the localized AI training data needed to build inclusive digital media.
+
+Existing accessibility tools are either too clinical, too expensive, or built for English-speaking markets — leaving an entire generation of Deaf Filipinos without a platform that speaks their language, literally and culturally.
+
+---
+
+## Solution Description
+
+**TANAW** is a creative edutainment platform — *TikTok for FSL* — that blends Filipino Sign Language learning with short-form content creation. Using interactive AI gesture filters and a community-driven reel feed, Deaf students learn and express themselves in their native language.
+
+Every video a user creates becomes a continuous training contribution for TANAW's FSL interpreter AI, building a self-improving, Filipino-first sign language dataset that doesn't exist anywhere else.
+
+TANAW has two interconnected services in one app:
+
+### 👋 Hearing & Speech (Deaf / Hard of Hearing)
+- **Live FSL → Tagalog** — on-device MediaPipe Holistic + LSTM classifier reads signs in real time and speaks the translation aloud
+- **Avatar Mode (Tagalog → FSL)** — type or speak a Tagalog phrase and a 3-D avatar signs it back
+- **Create** — record FSL signs against challenge prompts; submissions feed the community library and AI training pipeline
+- **Discover** — browse a TikTok-style vertical reel of community-contributed FSL clips, filterable by Greetings, Phrases, and more
+
+### 👁️ Vision Assistance (Blind / Low Vision)
+| Mode | What it does |
+|------|-------------|
+| **Outdoor** | Real-time scene description for walking and commuting |
+| **Indoor** | Room layout, doorways, furniture, obstacles |
+| **Social** | Who is nearby, facial expressions, social cues |
+| **Study** | OCR — reads text from books, screens, printed materials |
+| **Cooking** | Close-range knife tracking, heat hazards, ingredient ID |
+
+Additional vision features: Teach My World (name objects for future recall), Video Call volunteer handoff, face enrollment and recognition, and fall-detection emergency handoff.
+
+---
+
+## AI Approach and Architecture
+
+TANAW runs all core ML **on-device inside the Android WebView** — no Python server required, no cloud dependency for offline use.
+
+### FSL Recognition Pipeline
+```
+Camera → MediaPipe Holistic (pose + hands) → 258-feature keypoint vector
+→ 30-frame sliding window → custom LSTM (15-class FSL model)
+→ prior-calibrated softmax → Tagalog label + TTS output
+```
+- **Landmark extraction** — MediaPipe Holistic Tasks (WASM) extracts 33 pose + 21×2 hand landmarks per frame
+- **Gesture segmentation** — motion-threshold segmenter isolates sign boundaries, with pre-roll and multi-view agreement for ambiguous gestures
+- **LSTM classifier** — TensorFlow.js model trained on 15 Filipino Sign Language classes (30 timesteps × 258 features)
+- **Idle-prior calibration** — per-device background prior measured at runtime to suppress attractor-class bias
+- **Semantic polish** — raw gloss sequences are refined into natural Tagalog sentences via **Google Gemini 2.5 Flash**
+
+### Vision AI Pipeline
+```
+Camera frame → JPEG capture → Gemini 2.5 Flash multimodal prompt
+→ mode-specific system instruction → Filipino-language description → TTS
+```
+- Mode-specific system instructions tune Gemini's focus (e.g. OCR-only in Study mode, hazard-priority in Outdoor mode)
+- Gracefully degrades to a demo stub when no API key is present
+
+### Supporting AI Services
+| Service | Technology |
+|---------|-----------|
+| Face recognition | `@vladmandic/face-api` — TinyFaceDetector + FaceRecognitionNet (on-device) |
+| Object detection | TensorFlow.js COCO-SSD |
+| Fall detection | Capacitor Motion accelerometer + threshold heuristic |
+| Wake word | Custom regex normalizer for STT mishearings of "TANAW" across Filipino accents |
+| TTS / STT | Capacitor Speech Recognition + Text-to-Speech (native Android) |
+
+### Tech Stack
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 14 (App Router, static export) |
+| Runtime | Capacitor 6 (Android WebView) |
+| On-device ML | TensorFlow.js, MediaPipe Holistic Tasks (WASM) |
+| Vision AI | Google Gemini 2.5 Flash (multimodal) |
+| Styling | Tailwind CSS + TANAW yellow design system |
+
+---
+
+## Selected Challenge Theme
+
+**Accessibility & Inclusive Technology**
+
+TANAW directly addresses the digital exclusion of two underserved Filipino communities — the Deaf and the blind. It is built *with* these communities, not just *for* them: Filipino (`lang="fil"`) is the default language for all voice output, every screen supports one-handed use and 48×48 px minimum touch targets, and the FSL training data is generated by Deaf creators themselves — ensuring the AI learns Filipino Sign Language from Filipinos.
+
+The flywheel effect is the core innovation: the more Deaf youth use TANAW to create content, the better the FSL AI becomes, making the platform more useful for the next user.
+
+---
+
+## How IBM Bob Was Used
+
+IBM Bob was used throughout the full development cycle of TANAW as an always-on engineering partner:
+
+- **Architecture decisions** — Bob helped design the on-device ML pipeline (MediaPipe → LSTM → Gemini fallback), the Capacitor WebView integration strategy, and the storage/preferences abstraction layer
+- **Codebase-wide refactoring** — Bob maintained code quality and consistency across 39 source files, including CSS variables, Tailwind tokens, Android package configuration, and localStorage key namespacing
+- **Code generation** — Bob scaffolded and iterated on components including `TanawButton`, `BrandHeader`, `SplashScreen`, the FSL prior calibration system, the wake-word normalization engine, and the Gemini session manager
+- **Git workflow** — Bob initialized the repository, wrote commit messages, amended history, and managed force-pushes to keep the remote clean
+- **README authoring** — this document was written and restructured by Bob based on the team's brief
+
+---
+
+## Quick Start
+
+```bash
+npm install
+cp .env.example .env.local   # add NEXT_PUBLIC_GEMINI_API_KEY (optional)
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Android APK
+
+```bash
+npm run android:apk
+```
+
+Requires JDK 17, Android SDK, and `android/local.properties` with `sdk.dir=...`.
+
+## Project Structure
+
+```
+app/                  Next.js App Router screens
+features/
+  vision/             ModeShell, HazardWatcher, VoiceCommander
+  hearing/            FSL pipeline, SignAvatar, LandmarkOverlay
+services/             camera, gemini, ml, speech, storage
+shared/components/    Design system
+public/models/        TF.js FSL15, MediaPipe Holistic, face-api weights
+```
+
+---
+
+*Built with ❤️ for the IBM SkillsBuild Hackathon — July 2026*

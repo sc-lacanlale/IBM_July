@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --tanaw-yellow: #fde165;
+  --tanaw-cream: #fff5cb;
+  --tanaw-ink: #111111;
+  --tanaw-brown: #351616;
+  --tanaw-white: #ffffff;
+  --tanaw-muted: #5b5b66;
+  --tanaw-danger: #ff4d4f;
+  --tanaw-ok: #18a558;
+  --mode-outdoor: #ffe374;
+  --mode-indoor: #ffb27a;
+  --mode-social: #c9e57c;
+  --mode-study: #87e1dd;
+  --mode-cooking: #b7bdff;
+  --nav-h: 108px;
+  --view-header-h: 82px;
+  --radius-card: 20px;
+  --radius-tile: 25px;
+  --font-brand: "Gasoek One", "Tilt Warp", system-ui, sans-serif;
+  --font-display: "Tilt Warp", system-ui, sans-serif;
+  --font-body: "ABeeZee", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--tanaw-yellow);
+  color: var(--tanaw-ink);
+  font-family: var(--font-body);
+  height: 100%;
+}
+
+#app-root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+@layer utilities {
+  .safe-pb {
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}

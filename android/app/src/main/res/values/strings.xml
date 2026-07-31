@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TANAW</string>
+    <string name="title_activity_main">TANAW</string>
+    <string name="package_name">com.tanaw.app</string>
+    <string name="custom_url_scheme">com.tanaw.app</string>
+</resources>
